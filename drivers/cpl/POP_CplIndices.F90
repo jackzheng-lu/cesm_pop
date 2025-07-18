@@ -23,6 +23,9 @@ module POP_CplIndices
   integer :: index_o2x_Fioo_q
   integer :: index_o2x_Faoo_fco2_ocn
   integer :: index_o2x_Faoo_fdms_ocn
+  !>>> mzheng
+  integer :: index_o2x_Faoo_f14co2_ocn
+  !<<< mzheng
 
   ! drv -> ocn
 
@@ -109,6 +112,10 @@ contains
     index_x2o_Si_ifrac      = mct_avect_indexra(x2o,'Si_ifrac')
     index_x2o_Sa_pslv       = mct_avect_indexra(x2o,'Sa_pslv')
     index_x2o_So_duu10n     = mct_avect_indexra(x2o,'So_duu10n')
+    ! >>> mzheng
+    index_o2x_Faoo_f14co2_ocn = mct_avect_indexra(o2x,'Faoo_f14co2_ocn',perrWith='quiet')
+    ! <<< mzheng
+
     ! QL, 150526, from wav
     index_x2o_Sw_lamult     = mct_avect_indexra(x2o,'Sw_lamult')
     index_x2o_Sw_ustokes    = mct_avect_indexra(x2o,'Sw_ustokes')

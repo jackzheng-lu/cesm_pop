@@ -109,6 +109,10 @@ module ecosys_driver
   integer (int_kind)  :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer
   integer (int_kind)  :: sflux_co2_nf_ind   = 0 ! air-sea co2 gas flux
 
+  ! >>> mzheng: 新增 14CO2 相关变量
+  integer (int_kind)  :: sflux_14co2_nf_ind  = 0 ! air-sea 14co2 gas flux
+  ! <<< mzheng
+
   character (char_len)               :: ecosys_tadvect_ctype    ! advection method for ecosys tracers
   logical   (log_kind) , public      :: ecosys_qsw_distrb_const
   logical   (log_kind)               :: ciso_on
@@ -120,6 +124,9 @@ module ecosys_driver
   integer   (int_kind)               :: totalChl_id
   real      (r8)       , allocatable :: surface_flux_outputs(:, :, :, :)
 
+   ! >>> mzheng: 新增 14CO2 输出 ID
+   integer   (int_kind)               :: flux_14co2_id
+   ! <<< mzheng
 
   ! Variables related to global averages
 
@@ -585,6 +592,25 @@ contains
        call marbl_instances(iblock)%StatusLog%erase()
     end do
 
+    ! >>> mzheng: 新增 14CO2 表面通量输出注册
+    ! 注册后，MARBL 内部创建数据结构，14CO2 表面通量输出
+   sfo_cnt = sfo_cnt + 1
+   do iblock=1, max(1,nblocks_clinic)
+      call marbl_instances(iblock)%surface_flux_output%add_sfo(              &
+            num_elements = marbl_col_cnt(iblock),                           &
+            field_name   = "flux_14co2",                                    &
+            sfo_id       = flux_14co2_id,                                   &
+            marbl_status_log = marbl_instances(iblock)%StatusLog)
+      if (marbl_instances(iblock)%StatusLog%labort_marbl) then
+      write(log_message,"(A,I0,A)") "marbl(", iblock, &
+                                    ")%surface_flux_output%add_sfo(flux_14co2)"
+      call marbl_instances(iblock)%StatusLog%log_error_trace(log_message, subname)
+      end if
+      call print_marbl_log(marbl_instances(iblock)%StatusLog, iblock)
+      call marbl_instances(iblock)%StatusLog%erase()
+   end do
+   ! <<< mzheng
+
     ! Register totalChl with MARBL surface flux outputs
     sfo_cnt = sfo_cnt + 1
     do iblock=1, max(1,nblocks_clinic)
@@ -607,7 +633,9 @@ contains
 
     call named_field_register('SFLUX_CO2'        , sflux_co2_nf_ind)
     call named_field_register('model_chlorophyll', totChl_surf_nf_ind)
-
+   ! >>> mzheng: 新增 14CO2 命名字段注册
+   call named_field_register('SFLUX_14CO2'      , sflux_14co2_nf_ind)
+   ! <<< mzheng
     !--------------------------------------------------------------------
     ! allocate space for fields for which global averages are to be computed
     !--------------------------------------------------------------------
@@ -1083,6 +1111,14 @@ contains
     do iblock = 1, nblocks_clinic
        call named_field_set(sflux_co2_nf_ind, iblock, 44.0e-8_r8 * surface_flux_outputs(:,:,iblock,flux_co2_id))
     end do
+
+   ! >>> mzheng: 新增 14CO2 气体通量设置
+   !  set air-sea 14co2 gas flux named field, converting units from
+   !  nmol/cm^2/s (positive down) to kg 14CO2/m^2/s (positive down)
+   do iblock = 1, nblocks_clinic
+      call named_field_set(sflux_14co2_nf_ind, iblock, 46.0e-8_r8 * surface_flux_outputs(:,:,iblock,flux_14co2_id))
+   end do
+   ! <<< mzheng
 
   end subroutine ecosys_driver_post_set_sflux
 

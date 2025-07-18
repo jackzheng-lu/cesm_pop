@@ -734,6 +734,21 @@ contains
       enddo
    endif
 
+   ! >>> mzheng: 新增 14CO2 通量输出
+   if (index_o2x_Faoo_f14co2_ocn > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_Faoo_f14co2_ocn,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_Faoo_f14co2_ocn)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+   ! <<< mzheng
 !-----------------------------------------------------------------------
 !
 !     diagnostics
@@ -825,7 +840,8 @@ contains
 
    integer (int_kind) :: &
       iblock,           & ! block index
-      sflux_co2_nf_ind = 0! named field index of fco2
+      sflux_co2_nf_ind = 0, & ! named field index of fco2
+      sflux_14co2_nf_ind = 0 ! named field index of f14co2 >>> mzheng
 
    logical (log_kind) :: &
       first = .true.      ! only true for first call
@@ -876,6 +892,14 @@ contains
       endif
    endif
 
+   ! >>> mzheng: 新增 14CO2 累积逻辑
+   if (index_o2x_Faoo_f14co2_ocn > 0) then
+      if (sflux_14co2_nf_ind == 0) then
+         call named_field_get_index('SFLUX_14CO2', sflux_14co2_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+   endif
+   ! <<< mzheng
 !-----------------------------------------------------------------------
 !
 !  accumulate sums of U,V,T,S and GRADP
@@ -921,6 +945,14 @@ contains
       SBUFF_SUM(:,:,iblock,index_o2x_Faoo_fco2_ocn) = &
          SBUFF_SUM(:,:,iblock,index_o2x_Faoo_fco2_ocn) + delt_last*WORK(:,:,iblock)
    endif
+
+   ! >>> mzheng: 新增 14CO2 累积
+   if (index_o2x_Faoo_f14co2_ocn > 0 .and. sflux_14co2_nf_ind > 0) then
+      call named_field_get(sflux_14co2_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_Faoo_f14co2_ocn) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_Faoo_f14co2_ocn) + delt_last*WORK(:,:,iblock)
+   endif
+   ! <<< mzheng
 
    enddo
    !$OMP END PARALLEL DO
