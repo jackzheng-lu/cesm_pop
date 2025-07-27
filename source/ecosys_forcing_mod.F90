@@ -213,6 +213,7 @@ module ecosys_forcing_mod
   logical(log_kind), public :: ldriver_has_ndep
   logical(log_kind), public :: ldriver_has_atm_co2_diag
   logical(log_kind), public :: ldriver_has_atm_co2_prog
+  logical(log_kind), public :: ldriver_has_atm_14co2_prog
 
   ! Data type for reading interior tendency forcing from shr_stream
   type (strdata_input_type), pointer :: interior_strdata_inputlist_ptr(:)
@@ -545,6 +546,14 @@ contains
         call exit_POP(sigAbort, 'Stopping in ' // subname)
     end if
 
+    ! >>> mzheng
+    ! 一致性检查
+    if ((trim(atm_co2_opt) .eq. 'drv_prog') .and. (.not. ldriver_has_atm_14co2_prog)) then
+        call document(subname, "ERROR: atm_co2_opt is requesting prognostic 14CO2 from coupler but coupler is not providing it!")
+        call exit_POP(sigAbort, 'Stopping in ' // subname)
+    end if
+    ! <<< mzheng
+
     ! NDEP requested from driver but driver doesn't provide it?
     if ((ndep_data_type.eq.'driver') .and. (.not. ldriver_has_ndep)) then
         call document(subname, "ERROR: ndep_data_type is 'driver' but coupler is not providing nitrogen deposition!")
@@ -644,9 +653,18 @@ contains
 
         case ('d14c')
           d14c_ind = n
-          call surface_flux_forcings(n)%add_forcing_field(field_source='internal', &
-               marbl_varname=marbl_varname, field_units=units,                           &
-               driver_varname='D14C', rank=2, id=n)
+          ! >>> mzheng
+          ! 这一部分是原始的内容，使用内部的一个大气c14的来源
+          ! POP内部计算 → D14C值 → MARBL使用
+          ! call surface_flux_forcings(n)%add_forcing_field(field_source='internal', &
+          !      marbl_varname=marbl_varname, field_units=units,                           &
+          !      driver_varname='D14C', rank=2, id=n)
+          
+          ! 表示大气c14来源是来自于字符段
+          call surface_flux_forcings(n)%add_forcing_field(field_source='named_field', &
+                 marbl_varname=marbl_varname, field_units=units,                              &
+                 named_field='ATM_14CO2_PROG', rank=2, id=n)
+          ! <<< mzheng
 
         case ('u10_sqr')
           u10sqr_ind = n
@@ -1753,6 +1771,7 @@ contains
     ! Update carbon isotope atmosphere deltas if appropriate
     !-----------------------------------------------------------------------
 
+    ! mzheng_comment, 
     if (ciso_on) then
        call ciso_update_atm_d13C_D14C(land_mask, d13c, d14c)
     end if
@@ -1895,8 +1914,10 @@ contains
           !------------------------------------
           case ('named_field')
           !------------------------------------
-
+          ! mzheng_comment, 这里是从named_field中获取forcing field
+          ! 对应后面的那个d14c(:,:,iblock)赋值
           do iblock = 1,nblocks_clinic
+             
              call named_field_get(metadata%field_named_info%field_ind, iblock, &
                                   forcing_field%field_0d(:,:,iblock))
           end do
@@ -2002,11 +2023,12 @@ contains
                    forcing_field%field_0d(:,:,iblock) = atm_fine_dust_flux(:,:,iblock) + atm_coarse_dust_flux(:,:,iblock) + &
                         seaice_dust_flux(:,:,iblock)
 
+                !>>> mzheng_comment, 这里是internal方法赋值的地方
                 else if (index == d13c_ind) then
                    forcing_field%field_0d(:,:,iblock) = d13c(:,:,iblock)
 
-                else if (index == d14c_ind) then
-                   forcing_field%field_0d(:,:,iblock) = d14c(:,:,iblock)
+                ! else if (index == d14c_ind) then
+                !    forcing_field%field_0d(:,:,iblock) = d14c(:,:,iblock)
 
                 end if  ! index
 

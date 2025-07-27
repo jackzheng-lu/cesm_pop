@@ -25,6 +25,7 @@ module POP_CplIndices
   integer :: index_o2x_Faoo_fdms_ocn
   !>>> mzheng
   integer :: index_o2x_Faoo_f14co2_ocn
+  integer :: index_x2o_Sa_14co2prog   ! atmospheric 14CO2 prognostic
   !<<< mzheng
 
   ! drv -> ocn
@@ -36,6 +37,7 @@ module POP_CplIndices
   integer :: index_x2o_Sa_co2diag      ! bottom atm level diagnostic CO2
   integer :: index_x2o_Faxa_nhx        ! nitrogen deposition (nhx) flux from atm (kgNm2/sec)
   integer :: index_x2o_Faxa_noy        ! nitrogen deposition (noy) flux from atm (kgNm2/sec)
+
 
   ! QL, 150526, from wav
   integer :: index_x2o_Sw_lamult       ! wave model langmuir multiplier
@@ -114,6 +116,7 @@ contains
     index_x2o_So_duu10n     = mct_avect_indexra(x2o,'So_duu10n')
     ! >>> mzheng
     index_o2x_Faoo_f14co2_ocn = mct_avect_indexra(o2x,'Faoo_f14co2_ocn',perrWith='quiet')
+    index_x2o_Sa_14co2prog    = mct_avect_indexra(x2o,'Sa_14co2prog',perrWith='quiet')
     ! <<< mzheng
 
     ! QL, 150526, from wav

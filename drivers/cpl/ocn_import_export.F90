@@ -28,7 +28,7 @@ module ocn_import_export
    use forcing_fields,    only: EVAP_F, PREC_F, SNOW_F, MELT_F, ROFF_F, IOFF_F
    use forcing_fields,    only: SALT_F
    use forcing_fields,    only: SENH_F, LWUP_F, LWDN_F, MELTH_F
-   use forcing_fields,    only: ATM_CO2_PROG_nf_ind, ATM_CO2_DIAG_nf_ind
+   use forcing_fields,    only: ATM_CO2_PROG_nf_ind, ATM_CO2_DIAG_nf_ind, ATM_14CO2_PROG_nf_ind
    use forcing_fields,    only: ATM_NHx_nf_ind, ATM_NOy_nf_ind
    use forcing_fields,    only: IFRAC, U10_SQR, ATM_PRESS
    use forcing_fields,    only: LAMULT, USTOKES, VSTOKES
@@ -388,6 +388,39 @@ contains
 
       call named_field_set(ATM_CO2_PROG_nf_ind, WORK1)
    endif
+
+
+! >>> mzheng: 添加来自大气的14CO2处理
+! 注意，index_x2o_Sa_14co2prog在POP_CouplerIndicesMod中定义
+! 开头已经包含了POP_CouplerIndicesMod
+   if (index_x2o_Sa_14co2prog > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Sa_14co2prog,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating PROG 14CO2 halo')
+         return
+      endif
+
+      call named_field_set(ATM_14CO2_PROG_nf_ind, WORK1)
+   endif
+! <<< mzheng
+
 
    if (index_x2o_Sa_co2diag > 0) then
       n = 0

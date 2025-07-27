@@ -264,6 +264,14 @@ contains
    if (ldriver_has_atm_co2_prog) then
       call named_field_register('ATM_CO2_PROG', ATM_CO2_PROG_nf_ind)
    endif
+
+! >>> mzheng
+   ldriver_has_atm_14co2_prog = (index_x2o_Sa_14co2prog > 0)
+   if (ldriver_has_atm_14co2_prog) then
+      call named_field_register('ATM_14CO2_PROG', ATM_14CO2_PROG_nf_ind)
+   endif
+! <<< mzheng 
+
    ldriver_has_atm_co2_diag = (index_x2o_Sa_co2diag > 0)
    if (ldriver_has_atm_co2_diag) then
       call named_field_register('ATM_CO2_DIAG', ATM_CO2_DIAG_nf_ind)

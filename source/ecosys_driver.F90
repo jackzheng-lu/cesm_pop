@@ -1112,7 +1112,8 @@ contains
        call named_field_set(sflux_co2_nf_ind, iblock, 44.0e-8_r8 * surface_flux_outputs(:,:,iblock,flux_co2_id))
     end do
 
-   ! >>> mzheng: 新增 14CO2 气体通量设置
+   ! >>> mzheng: 将海洋的输出，赋值到耦合器中，
+   ! sflux_14co2_nf_ind这个索引对应的是'SFLUX_14CO2'
    !  set air-sea 14co2 gas flux named field, converting units from
    !  nmol/cm^2/s (positive down) to kg 14CO2/m^2/s (positive down)
    do iblock = 1, nblocks_clinic
