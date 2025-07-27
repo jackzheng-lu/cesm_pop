@@ -213,7 +213,9 @@ module ecosys_forcing_mod
   logical(log_kind), public :: ldriver_has_ndep
   logical(log_kind), public :: ldriver_has_atm_co2_diag
   logical(log_kind), public :: ldriver_has_atm_co2_prog
+  ! >>> mzheng
   logical(log_kind), public :: ldriver_has_atm_14co2_prog
+  ! <<< mzheng
 
   ! Data type for reading interior tendency forcing from shr_stream
   type (strdata_input_type), pointer :: interior_strdata_inputlist_ptr(:)

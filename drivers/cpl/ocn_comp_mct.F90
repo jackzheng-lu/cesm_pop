@@ -125,6 +125,9 @@ contains
     use ecosys_forcing_mod, only : ldriver_has_ndep
     use ecosys_forcing_mod, only : ldriver_has_atm_co2_diag
     use ecosys_forcing_mod, only : ldriver_has_atm_co2_prog
+    ! >>> mzheng
+    use ecosys_forcing_mod, only : ldriver_has_atm_14co2_prog
+    ! <<< mzheng
 !
 ! !DESCRIPTION:
 ! Initialize POP 
