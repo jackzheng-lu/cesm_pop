@@ -999,6 +999,7 @@ contains
            marbl_instances(iblock)%surface_flux_saved_state%state(n)%field_2d(index_marbl)
        end do
 
+      ! mzheng_comments, 这里对surface_flux_outputs进行赋值以便后续使用
        do n=1,sfo_cnt
          surface_flux_outputs(i,j,iblock,n) = &
             marbl_instances(iblock)%surface_flux_output%sfo(n)%forcing_field(index_marbl)
