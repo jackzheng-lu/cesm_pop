@@ -1117,8 +1117,9 @@ contains
    ! sflux_14co2_nf_ind这个索引对应的是'SFLUX_14CO2'
    !  set air-sea 14co2 gas flux named field, converting units from
    !  nmol/cm^2/s (positive down) to kg 14CO2/m^2/s (positive down)
+   ! 注意，后面有个负号，所以这里应该是乘以负号，保证到大气的时候是正值
    do iblock = 1, nblocks_clinic
-      call named_field_set(sflux_14co2_nf_ind, iblock, 46.0e-8_r8 * surface_flux_outputs(:,:,iblock,flux_14co2_id))
+      call named_field_set(sflux_14co2_nf_ind, iblock, -46.0e-8_r8 * surface_flux_outputs(:,:,iblock,flux_14co2_id))
    end do
    ! <<< mzheng
 
